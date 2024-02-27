@@ -1,19 +1,22 @@
----
-- name: Demo rules with kafka as source
-  hosts: localhost
-  sources:
-    - name: kafka
-      kafka:
-        topic: eda
-        host: localhost
-        port: 9092
-        group_id: testing
-  rules:
-    - name: Check defined
-      condition: event.i is defined
-      action:
-        debug:
-    - name: Shutdown
-      condition: event.stop == true
-      action:
-        shutdown:
+name: Azure Resource Group Creation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create_resource_group:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Create resource group
+      uses: azure/CLI@v1
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az group create --name $(cat /dev/urandom | LC_CTYPE=C tr -dc 'a-z0-9' | fold -w 12 | head -n 1) --location eastus
+      env:
+        AZURE_CLI_AUTH_MSI: true
